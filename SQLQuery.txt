@@ -1,0 +1,9 @@
+Write an SQL query to calculate the percentage of students who have 
+a GPA higher than the average GPA of all students.
+
+Ans. ===>
+
+SELECT 
+    (COUNT(CASE WHEN gpa > (SELECT AVG(gpa) FROM Students) THEN 1 END) * 100.0 / COUNT(*)) AS percentage_above_avg
+FROM 
+    Students;

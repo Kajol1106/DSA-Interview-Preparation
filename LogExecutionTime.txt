@@ -1,0 +1,89 @@
+1. Create the @LogExecutionTime Annotation
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface LogExecutionTime {
+
+}
+
+RetentionPolicy.RUNTIME: The annotation will be available at runtime
+
+@interface: The keyword used to declare an annotation.
+
+ElementType.METHOD: The annotation can only be applied to methods. 
+This means that you cannot use @LogExecutionTime on classes, fields, or other elements, only on methods.
+
+2. Create the Aspect to Log Execution Time
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class LoggingAspect {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
+
+    @Around("@annotation(com.example.logging.LogExecutionTime)")
+    public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = System.currentTimeMillis();
+        
+        // Proceed with the method execution
+        Object proceed = joinPoint.proceed();
+        
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        
+        logger.info("{} executed in {} ms", joinPoint.getSignature(), executionTime);
+        
+        return proceed;
+    }
+}
+
+@LogExecutionTime: 
+Custom annotation that you can place on any method you want to log the execution time of.
+
+@Aspect: 
+Marks the class as an aspect, which is a special class used for cross-cutting concerns like logging, security, etc.
+
+@Around: 
+This advice type is used to run code before and after the method execution. 
+It wraps the annotated method, allowing you to measure its execution time.
+
+joinPoint.proceed(): Executes the target method.
+
+System.currentTimeMillis(): Captures the start and end time to calculate the method's execution time.
+
+Logger: Logs the execution time using SLF4J.
+
+3. Now, you can use the @LogExecutionTime annotation on any method you want to monitor:
+
+import com.example.logging.LogExecutionTime;
+import org.springframework.stereotype.Service;
+
+@Service
+public class MyService {
+
+    @LogExecutionTime
+    public void performTask() {
+        // Simulate a task with a sleep
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+5. This approach allows you to easily monitor and log the 
+execution time of any method annotated with @LogExecutionTime.
+
