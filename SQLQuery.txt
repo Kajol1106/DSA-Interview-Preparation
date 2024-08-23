@@ -7,3 +7,23 @@ SELECT
     (COUNT(CASE WHEN gpa > (SELECT AVG(gpa) FROM Students) THEN 1 END) * 100.0 / COUNT(*)) AS percentage_above_avg
 FROM 
     Students;
+
+
+
+
+SELECT Airport.Name AS airport_name,
+       SUM(ArrivalFlights) - SUM(DepartureFlights) AS flight_count_difference
+FROM Airport
+JOIN (
+    SELECT Arrival_airport_id, COUNT(*) AS ArrivalFlights
+    FROM Flights
+    GROUP BY Arrival_airport_id
+) AS Arrival ON Airport.Airport_id = Arrival.Arrival_airport_id
+JOIN (
+    SELECT Departure_airport_id, COUNT(*) AS DepartureFlights
+    FROM Flights
+    GROUP BY Departure_airport_id
+) AS Departure ON Airport.Airport_id = Departure.Departure_airport_id
+GROUP BY Airport.Name
+HAVING SUM(ArrivalFlights) > SUM(DepartureFlights)
+ORDER BY flight_count_difference DESC, airport_name ASC;
